@@ -3,15 +3,14 @@ Author: Mauricio Posadas
 Date Started: January 15th 2024
 
 Current Status: 
-    Problems with removeTask function line 130
+    Problems with removeTask function line 134
     Completed Task functions (printTaskInfo, changePriority, changeStatus)
     Completed Console functions (printTaskBoard, addTask, menu)
 
-TO-DO: Check if implemented functions are working correctly
+TO-DO: 
 
-Additional Things to implement:
-    1. Erase Tasks from the TaskBoard without the use of remove function from <algorithms>
-    2. Better algorithm for markPriority (currently has bad run time)
+Additional Things to implement:   
+    1. Better algorithm for markPriority (currently has bad run time)
 */
 
 #include <iostream>
@@ -128,7 +127,13 @@ class Console
         cout << "Please list the task you would like to remove by listing the task description\n" << endl;
         printTaskBoard();
         cin >> temp;
-        taskBoard.erase(remove(taskBoard.begin(), taskBoard.end(), temp)); // massive problem with this line
+        for(int i = 0; i<taskBoard.size(); i++)
+        {
+            if(taskBoard.at(i).getDescription() == temp)
+            {
+                taskBoard.erase(); // must be an iterator not an int
+            }
+        }
     }
     void markPriority()
     {
