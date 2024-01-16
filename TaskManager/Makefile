@@ -2,9 +2,9 @@ CXX = g++
 
 CXXFLAGS = -c -g -Wall -std=c++17
 
-PROGRAM = kmp.out
+PROGRAM = tm.out
 
-CPPFILES = kmp.cpp
+CPPFILES = tm.cpp
 
 all:
 	# g++ -c -g -Wall -std=c++17
