@@ -2,12 +2,23 @@
 Author: Mauricio Posadas
 Date Started: January 15th 2024
 
-Current Status: Creating classes as well as variables/ functions for different classes
+Current Status: 
+    Problems with removeTask function line 130
+    Completed Task functions (printTaskInfo, changePriority, changeStatus)
+    Completed Console functions (printTaskBoard, addTask, menu)
+
+TO-DO: Check if implemented functions are working correctly
+
+Additional Things to implement:
+    1. Erase Tasks from the TaskBoard without the use of remove function from <algorithms>
+    2. Better algorithm for markPriority (currently has bad run time)
 */
 
 #include <iostream>
 #include <string>
 #include <vector>
+#include <sstream>
+#include <algorithm>
 
 using namespace std;
 
@@ -19,11 +30,11 @@ class Task
     
     public:
     
-    Task(string newTask, int np, bool status)
+    Task(string newTask, int np)
     {
         taskDescription = newTask;
         priorityLevel = np;
-        completed = status;
+        completed = false;
     }
 
     void printTaskInfo()
@@ -38,9 +49,13 @@ class Task
     {
         priorityLevel = newPriority;
     }
-    void changeStatus(bool newStatus) // Potential Problems as variable is private
+    void changeStatus() // Potential Problems as variable is private
     {
-        completed = newStatus;
+        completed = true;
+    }
+    string getDescription()
+    {
+        return taskDescription;
     }
 };
 
@@ -48,7 +63,7 @@ class Console
 {
     
     vector<Task> taskBoard; // stores ALL tasks
-    //stack or array to store priority on tasks
+    
     public:
     Console() // constructor
     {}
@@ -61,7 +76,7 @@ class Console
              << "\n4. View Tasks"
              << "\n5. Exit" << endl;
     }
-    void runConsole()
+    void actions() // not completed
     {
         int choice;
         cout << "Which action would you like to complete?" << endl;
@@ -69,7 +84,7 @@ class Console
         switch(choice) 
         {
             case 1:
-                //addTask();
+                addTask();
                 break;
             case 2: 
                 removeTask();
@@ -78,25 +93,60 @@ class Console
                 //mark tasks as completed
                 break;
             case 4:
-                // print all tasks
+                printTaskBoard();
                 break;
-            case 5:
-                //exit
+            case 5: //exit
+                break;
+            default:
+                cout << "Invalid choice. Try again" << endl;
                 break;
         }
 
         
     }
-    void addTask(Task newTask)
+    void printTaskBoard()
     {
-
-        
+        for(auto item : taskBoard) // watch for bounds errors
+        {
+            item.printTaskInfo();
+        }
     }
-    void removeTask(){}
-    void markPriority(){}
-
-
-
+    void addTask()
+    {
+        string input, tempTask, tempPriority;
+        cout << "You would like to create a new task. Please enter the following info\n"
+             << "Task description followed by priority level. All in one line (1 to 3. 1 being utmost priority)" << endl;
+        getline(cin, input);
+        stringstream iss(input);
+        iss >> tempTask >> tempPriority;
+        Task temp(tempTask, stoi(tempPriority)); // initializes task manager
+        taskBoard.push_back(temp); // pushes task onto task manager vector
+    }
+    void removeTask()
+    {
+        string temp;
+        cout << "Please list the task you would like to remove by listing the task description\n" << endl;
+        printTaskBoard();
+        cin >> temp;
+        taskBoard.erase(remove(taskBoard.begin(), taskBoard.end(), temp)); // massive problem with this line
+    }
+    void markPriority()
+    {
+        string temp;
+        int tempPriority;
+        cout << "Please list the task you would like to change its priority level by listing task description\n" << endl;
+        printTaskBoard();
+        cin >> temp;
+        cout << "Enter new priority level (1 to 3. 1 being utmost priority)" << endl;
+        cin  >> tempPriority;
+        for(auto item : taskBoard) // bad runTime
+        {
+            if(item.getDescription() == temp)
+            {
+                item.changePriority(tempPriority);
+            }
+        }
+    }
 };
 
 
