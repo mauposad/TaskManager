@@ -3,13 +3,16 @@ Author: Mauricio Posadas
 Date Started: January 15th 2024
 
 Current Status: 
-    Completed Task functions (printTaskInfo, changePriority, changeStatus)
-    Completed Console functions (printTaskBoard, addTask, menu, markPriority, removeTask)
+    Basic functions (except AddTask) are working properly. Same with the running program. 
+    For PriorityVector have upper and lower limit when inputting. Reorganize any time new task is inserted
 
-TO-DO: xxxx
+TO-DO: Figure out how to take in sentences on AddTask Function.
+       Make PriorityBoard based on priority level.
+       (Stack, Queue, Array, or another vector?)
 
 Additional Things to implement:   
-    1. Better algorithm for markPriority & removeTask (currently has bad run time)
+    1. On markStatus can prompt user if they would like to remove instead of immediately removing
+   
 */
 
 #include <iostream>
@@ -27,7 +30,7 @@ class Task
     
     public:
     
-    Task(string newTask, int np)
+    Task(string &newTask, int &np)
     {
         taskDescription = newTask;
         priorityLevel = np;
@@ -39,7 +42,7 @@ class Task
         cout << "Task Info" << endl;
         cout << "Task Description: " << taskDescription
              << "\nPriority Level: " << priorityLevel
-             << "\nCompleted? " << completed << endl;
+             << "\nCompleted? No\n" << endl;
     }
 
     void changePriority(int newPriority) // Potential Problems as variable is private
@@ -60,6 +63,7 @@ class Console
 {
     
     vector<Task> taskBoard; // stores ALL tasks
+    vector<Task> priorityList; // vector for now. 
     
     public:
     Console() // constructor
@@ -71,94 +75,112 @@ class Console
              << "\n2. Remove Task"
              << "\n3. Mark Task as Completed"
              << "\n4. View Tasks"
-             << "\n5. Exit" << endl;
+             << "\n5. Change Priority Level"
+             << "\n6. Exit\n" << endl;
     }
-    void actions() // not completed
+    void run() 
     {
         int choice;
-        cout << "Which action would you like to complete?" << endl;
-        cin >> choice;
-        switch(choice) 
+        do
         {
-            case 1:
-                addTask();
-                break;
-            case 2: 
-                removeTask();
-                break;
-            case 3:
-                //mark tasks as completed
-                break;
-            case 4:
-                printTaskBoard();
-                break;
-            case 5: //exit
-                break;
-            default:
-                cout << "Invalid choice. Try again" << endl;
-                break;
-        }
+            cout << "Which action would you like to complete?" << endl;
+            menu();
+            cin >> choice;
+            switch(choice) 
+            {
+                case 1:
+                    addTask();
+                    break;
+                case 2: 
+                    removeTask();
+                    break;
+                case 3:
+                    markStatus();
+                    break;
+                case 4:
+                    printTaskBoard();
+                    break;
+                case 5:
+                    markPriority();
+                    break;
+                case 6: //exit
+                    break;
+                default:
+                    cout << "Invalid choice. Try again" << endl;
+                    break;
+            } 
+        } while (choice!=6);
+        
+       
 
         
     }
     void printTaskBoard()
     {
-        for(auto item : taskBoard) // watch for bounds errors
+        int num = 0;
+        for(auto item : taskBoard) // number the tasks being outputted
         {
+            cout << num << ". ";
             item.printTaskInfo();
+            num++;
         }
     }
-    void addTask()
+    void addTask() // still needs work
     {
-        string input, tempTask, tempPriority;
-        cout << "You would like to create a new task. Please enter the following info\n"
-             << "Task description followed by priority level. All in one line (1 to 3. 1 being utmost priority)" << endl;
-        getline(cin, input);
-        stringstream iss(input);
-        iss >> tempTask >> tempPriority;
-        Task temp(tempTask, stoi(tempPriority)); // initializes task manager
+        string tempTask;
+        int tempPriority;
+        cout << "You would like to create a new task. Please enter task description" <<  endl;
+        cin >> tempTask;
+        cout << "Now enter priority level. All in one line (1 to 3. 1 being the utmost priority)" << endl;
+        cin >> tempPriority;
+        Task temp(tempTask, tempPriority); // initializes task manager
         taskBoard.push_back(temp); // pushes task onto task manager vector
     }
     void removeTask()
     {
-        int back;
+        int back, temp;
         back = taskBoard.size()-1;
-        string temp;
-        cout << "Please list the task you would like to remove by listing the task description\n" << endl;
+        cout << "Please list the task you would like to remove by entering task number\n" << endl;
         printTaskBoard();
         cin >> temp;
-        for(size_t i = 0; i<taskBoard.size(); i++) 
-        {
-            if(taskBoard.at(i).getDescription() == temp)
-            {
-                swap(taskBoard[i], taskBoard[back]);
-                taskBoard.pop_back();
-            }
-        }
+        swap(taskBoard[temp], taskBoard[back]); // move Task to back of vector
+        taskBoard.pop_back(); // pop Task out of vector
     }
-    void markPriority()
+    void removeTask(int temp) // removing task without user input
     {
-        string temp;
-        int tempPriority;
-        cout << "Please list the task you would like to change its priority level by listing task description\n" << endl;
+        int back;
+        back = taskBoard.size()-1;
+        swap(taskBoard[temp], taskBoard[back]); // move Task to back of vector
+        taskBoard.pop_back(); // pop Task out of vector
+    }
+    void markPriority() //changing Priority level
+    {
+        int tempPriority, temp;
+        cout << "Please list the task you would like to change its priority level by entering task number" << endl;
         printTaskBoard();
         cin >> temp;
         cout << "Enter new priority level (1 to 3. 1 being utmost priority)" << endl;
         cin  >> tempPriority;
-        for(auto item : taskBoard) // bad runTime
-        {
-            if(item.getDescription() == temp)
-            {
-                item.changePriority(tempPriority);
-            }
-        }
+        taskBoard.at(temp).changePriority(tempPriority); // changing priority 
+    }
+    void markStatus() // changing status to completed then removing
+    {
+        int temp;
+        cout << "Which Task have you completed?\n" << endl;
+        printTaskBoard();
+        cout << "Please enter number of task you have completed? " << endl;
+        cin >> temp;
+        taskBoard.at(temp).changeStatus();
+        cout << "Task will now be removed from Task Board" << endl;
+        removeTask(temp);
     }
 };
 
 
 int main()
 {
-
+    Console ToDoList;
+    ToDoList.run();
 
     return 0;
 }
