@@ -1,19 +1,19 @@
-/*Console baseed task management system written in C++
+/*Console based task management system written in C++
 Author: Mauricio Posadas
 Date Started: January 15th 2024
 
 Current Status: 
-    Need to modify all basic functions to also work priorityBoard.
-    Run needs to be modified to only take in numbers. Glitches out when taking in letters
+   removeTask gives segFault (lines 167 and 176)
+   addTask only takes in a single word description along with priority glitches out when non number values are inputted
 
-TO-DO: Modify all basic functions to also work for priorityBoard (doubly linked list)
-       Prompt if they want unorganized or organized when printing taskBoard.
+TO-DO: Fix segFault on removeTask. Problem could also be with while statement or possibly use of erase function
+      
 
 Additional Things to implement:   
     1. On markStatus can prompt user if they would like to remove instead of immediately removing
     2. Implement markPriority. remove from list then reimplement in correct place? 
     3. Could also just show tasks of utmost importance till they are completed then show remaining tasks
-    4. Maybe just one data structure? instead of one unorganized vector and one organized list
+    
 */
 
 #include <iostream>
@@ -29,6 +29,7 @@ class Task
     string taskDescription;
     int priorityLevel;
     bool completed;
+    int taskNum;
     
     public:
     
@@ -37,12 +38,13 @@ class Task
         taskDescription = newTask;
         priorityLevel = np;
         completed = false;
+        taskNum = 0;
     }
 
     void printTaskInfo()
     {   
-        cout << "Task Info" << endl;
-        cout << "Task Description: " << taskDescription
+        cout << taskNum << ". Task Info\n"
+             << "Task Description: " << taskDescription
              << "\nPriority Level: " << priorityLevel
              << "\nCompleted? No\n" << endl;
     }
@@ -55,6 +57,10 @@ class Task
     {
         completed = true;
     }
+    void changeTaskNum(int newNum)
+    {
+        taskNum = newNum;
+    }
     string getDescription()
     {
         return taskDescription;
@@ -63,28 +69,30 @@ class Task
     {
         return priorityLevel;
     }
+    int getTaskNum()
+    {
+        return taskNum;
+    }
 };
 
 class Console
 {
     
-    vector<Task> taskBoard; // stores ALL tasks 
-    list<Task> priorityBoard; // orders task by priority level
+    list<Task> priorityBoard; // stores all tasks and orders task by priority level
     
     public:
     Console() // constructor
     {}
-    void menu() // do while loop to show menu and choose number
+    void menu() 
     {
         cout << "\nTask Manager. Actions below"
              << "\n1. Add Task"
              << "\n2. Remove Task"
              << "\n3. Mark Task as Completed"
              << "\n4. View Tasks"
-             << "\n5. Change Priority Level"
-             << "\n6. Exit\n" << endl;
+             << "\n5. Exit\n" << endl;
     }
-    void run() // modify to only take numbers and nothing else. 
+    void run() 
     {
         int choice;
         do
@@ -106,72 +114,85 @@ class Console
                 case 4:
                     printTaskBoard();
                     break;
-                case 5: //FIXME
-                    //markPriority();
-                    break;
-                case 6: //exit
+                case 5: //exit
                     break;
                 default:
                     cout << "Invalid choice. Try again" << endl;
                     break;
             } 
-        } while (choice!=6);
+        } while (choice!=5);
         
        
 
         
     }
-    void printTaskBoard()
+    void printTaskBoard() 
     {
-        int num = 0;
-        for(auto item : taskBoard) // number the tasks being outputted
+        int num = 1;
+        for(auto item : priorityBoard) // number the tasks being outputted
         {
-            cout << num << ". ";
+            item.changeTaskNum(num);
             item.printTaskInfo();
             num++;
         }
+
     }
-    void addTask() // still needs work
+    void addTask() // still needs work on getLine function
     {
         string tempTask;
-        int tempPriority;
+        int tempPriority = 0;
         cout << "You would like to create a new task. Please enter task description" <<  endl;
-        cin >> tempTask;// modify to take in sentences
-        cout << "Now enter priority level. All in one line (1 to 3. 1 being the utmost priority)" << endl;
-        cin >> tempPriority; // change so only takes numbers one through 3
-        Task temp(tempTask, tempPriority); // initializes task manager
-        taskBoard.push_back(temp); // pushes task onto task manager vector
+        cin >> tempTask; // not taking in full phrases only single words. 
+        while((tempPriority>3) || (tempPriority<1))
+        {
+            cout << "Now enter priority level. All in one line (1 - 3. 1 being the utmost priority)" << endl;
+            cin >> tempPriority; // still crashes when inputting non number characters
+        }
+        Task temp(tempTask, tempPriority); // initializes task to be added
         organizePriority(temp);
     }
-    void removeTask()
+    void removeTask() // erase function causing segFault
     {
-        int back, temp;
-        back = taskBoard.size()-1;
+        int temp;
         cout << "Please list the task you would like to remove by entering task number\n" << endl;
         printTaskBoard();
         cin >> temp;
-        swap(taskBoard[temp], taskBoard[back]); // move Task to back of vector
-        taskBoard.pop_back(); // pop Task out of vector
+        auto it = priorityBoard.begin();
+        while((it != priorityBoard.end()) && (it->getTaskNum()!=temp))
+        {
+            it++;
+        }
+        //priorityBoard.erase(it);
     }
     void removeTask(int temp) // removing task without user input
     {
-        int back;
-        back = taskBoard.size()-1;
-        swap(taskBoard[temp], taskBoard[back]); // move Task to back of vector
-        taskBoard.pop_back(); // pop Task out of vector
+        auto it = priorityBoard.begin();
+        while((it != priorityBoard.end()) && (it->getTaskNum()!=temp))
+        {
+            it++;
+        }
+        //priorityBoard.erase(it);
     }
-    void markStatus() // changing status to completed then removing
+    void markStatus()
     {
         int temp;
         cout << "Which Task have you completed?\n" << endl;
         printTaskBoard();
         cout << "Please enter number of task you have completed? " << endl;
         cin >> temp;
-        taskBoard.at(temp).changeStatus();
+         for(auto item : priorityBoard) // number the tasks being outputted
+        {
+            if(item.getTaskNum() == temp)
+            {
+                item.changeStatus();
+                break; // breaking out of for loop to avoid unnecesary iterations
+            }
+        }
+        
         cout << "Task will now be removed from Task Board" << endl;
         removeTask(temp);
     }
-    void organizePriority(Task temp) // NEEDS TO BE CHECKED
+    void organizePriority(Task temp)
     {
         if(temp.getPriority() == 3)
         {
@@ -205,7 +226,7 @@ int main()
 }
 
 
-/* FOR LATER USE
+/* FOR LATER USE MARK PRIORITY
 void markPriority() //changing Priority level
     {
         int tempPriority, temp;
