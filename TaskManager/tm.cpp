@@ -4,9 +4,10 @@ Date Started: January 15th 2024
 
 Current Status: 
    removeTask gives segFault (lines 167 and 176)
-   addTask only takes in a single word description along with priority glitches out when non number values are inputted
 
 TO-DO: Fix segFault on removeTask. Problem could also be with while statement or possibly use of erase function
+       Test addTask (added cin.ignore and getline)
+       FileHandling. Saving tasks between sessions. Save to file and import from file
       
 
 Additional Things to implement:   
@@ -142,7 +143,8 @@ class Console
         string tempTask;
         int tempPriority = 0;
         cout << "You would like to create a new task. Please enter task description" <<  endl;
-        cin >> tempTask; // not taking in full phrases only single words. 
+        cin.ignore();
+        getline(cin, tempTask);
         while((tempPriority>3) || (tempPriority<1))
         {
             cout << "Now enter priority level. All in one line (1 - 3. 1 being the utmost priority)" << endl;
